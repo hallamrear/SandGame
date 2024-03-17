@@ -376,10 +376,10 @@ void Update()
             break;
             }
         }
-
-        //Updating texture memory with the new cell data.
-        SDL_UpdateTexture(CellTexture, NULL, Cells, sizeof(SDL_Color) * GridWidth);
     }
+
+    //Updating texture memory with the new cell data.
+    SDL_UpdateTexture(CellTexture, NULL, Cells, sizeof(SDL_Color)* GridWidth);
 }
 
 void Render()
