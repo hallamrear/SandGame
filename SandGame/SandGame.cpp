@@ -6,14 +6,23 @@
 #include <SDL.h>
 #undef main
 
+//#define WHITE 0xFFFFFFFF
+//#define RED 0xFF0000FF
+//#define GREEN 0x00FF00FF
+//#define BLUE 0x0000FFFF
+//#define BLACK 0x00000000
+//#define PINK 0xFF00FFFF
+//#define CYAN 0x00FFFFFF
+//#define YELLOW 0xFFFF00FF
+
 #define WHITE 0xFFFFFFFF
 #define RED 0xFF0000FF
-#define GREEN 0x00FF00FF
-#define BLUE 0x0000FFFF
+#define GREEN 0xFF00FF00
+#define BLUE 0xFFFF0000
 #define BLACK 0x00000000
-#define PINK 0xFF00FFFF
-#define CYAN 0x00FFFFFF
-#define YELLOW 0xFFFF00FF
+#define PINK 0xFFFF00FF
+#define CYAN 0xFFFFFF00
+#define YELLOW 0xFF00FFFF
 
 typedef unsigned int Cell;
 
@@ -29,9 +38,23 @@ unsigned int ColourList[8] =
     YELLOW
 };
 
-int SelectedColour = ColourList[0];
-int SpraySize = 5;
-constexpr int SpraySizeMin = 1;
+std::string ColourNameList[8] =
+{
+    "BLACK",
+    "WHITE",
+    "RED",
+    "GREEN",
+    "BLUE",
+    "PINK",
+    "CYAN",
+    "YELLOW",
+};
+
+int SelectedColour = ColourList[1];
+int SpraySize = 15;
+int MouseX = 0;
+int MouseY = 0;
+constexpr int SpraySizeMin = 2;
 constexpr int SpraySizeMax = 100;
 constexpr int GridWidth  = 800;
 constexpr int GridHeight = 800;
@@ -48,6 +71,16 @@ SDL_Window* Window = nullptr;
 SDL_Texture* CellTexture = nullptr;
 
 Cell Cells[GridArea] = { 0 };
+
+SDL_Colour ColourToSDLColour(const unsigned int& colour)
+{
+    SDL_Colour sdlColour{};
+    sdlColour.r = (colour & 0x000000FF);
+    sdlColour.g = (colour & 0x0000FF00) >> 8;
+    sdlColour.b = (colour & 0x00FF0000) >> 16;
+    sdlColour.a = (colour & 0xFF000000) >> 24;
+    return sdlColour;
+}
 
 bool CanSpawnOnCell(const int& x, const int& y)
 {
@@ -140,16 +173,16 @@ void Update()
         {
             switch (sdlEvent.key.keysym.sym)
             {
-            case SDLK_1: { SelectedColour = 1; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_2: { SelectedColour = 2; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_3: { SelectedColour = 3; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_4: { SelectedColour = 4; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_5: { SelectedColour = 5; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_6: { SelectedColour = 6; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_7: { SelectedColour = 7; std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            //case SDLK_8: { SelectedColour = 8;  std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            //case SDLK_9: { SelectedColour = 9;  std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
-            case SDLK_0: { SelectedColour = 0;  std::cout << "Colour selected: " + std::to_string(SelectedColour) << std::endl; } break;
+            case SDLK_1: { SelectedColour = 1; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_2: { SelectedColour = 2; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_3: { SelectedColour = 3; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_4: { SelectedColour = 4; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_5: { SelectedColour = 5; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_6: { SelectedColour = 6; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_7: { SelectedColour = 7; std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            //case SDLK_8: { SelectedColour = 8;  std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            //case SDLK_9: { SelectedColour = 9;  std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
+            case SDLK_0: { SelectedColour = 0;  std::cout << "Colour selected: " + ColourNameList[SelectedColour] << std::endl; } break;
 
 
 
@@ -231,17 +264,16 @@ void Update()
         }
     }
 
-    int x, y;
-    SDL_GetMouseState(&x, &y);
+    SDL_GetMouseState(&MouseX, &MouseY);
 
     if (MouseButtonStates[0])
     {
-        CreateCellAroundPoint(x, y, SpraySize, ColourList[SelectedColour]);
+        CreateCellAroundPoint(MouseX, MouseY, SpraySize / 2, ColourList[SelectedColour]);
     } 
    
     if (MouseButtonStates[2])
     {
-        CreateCellSquare(x, y, SpraySize, ColourList[SelectedColour]);
+        CreateCellSquare(MouseX, MouseY, SpraySize, ColourList[SelectedColour]);
     }
 
     if (IsPaused == false)
@@ -316,7 +348,7 @@ void Update()
                         }
                         else
                         {
-                            Cells[leftIndex] = cell;
+                            Cells[rightIndex] = cell;
                             Cells[i] = BLACK;
                         }
                     }
@@ -356,12 +388,19 @@ void Render()
     SDL_RenderClear(Renderer);
 
     //Copy the Cells Texture to the screen
-    SDL_Rect drawRect{};
-    drawRect.x = (WindowWidth - GridWidth) / 2;
-    drawRect.y = (WindowHeight - GridHeight) / 2;
-    drawRect.w = GridWidth;
-    drawRect.h = GridHeight;
     SDL_RenderCopy(Renderer, CellTexture, NULL, NULL);
+
+    //Draw mouse outline rect;
+    SDL_Rect drawRect{};
+    drawRect.x = MouseX - (SpraySize / 2);
+    drawRect.y = MouseY - (SpraySize / 2);
+    drawRect.w = SpraySize;
+    drawRect.h = SpraySize;
+
+    SDL_Colour drawColour = ColourToSDLColour(ColourList[SelectedColour]);
+
+    SDL_SetRenderDrawColor(Renderer, drawColour.r, drawColour.g, drawColour.b, 255);
+    SDL_RenderDrawRect(Renderer, &drawRect);
 
     SDL_RenderPresent(Renderer);
 }
@@ -380,7 +419,7 @@ void Create()
     if (Renderer == nullptr)
         return;
 
-    CellTexture = SDL_CreateTexture(Renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, GridWidth, GridHeight);
+    CellTexture = SDL_CreateTexture(Renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, GridWidth, GridHeight);
     if (CellTexture == nullptr)
         return;
 
